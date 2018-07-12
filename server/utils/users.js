@@ -40,7 +40,9 @@ class Users {
     var rooms = users.map((user) => {
       return user.room;
     })
-    return rooms;
- }
+    var uniqueRooms = _.sortedUniq(rooms);
+    return uniqueRooms;
+  }
+
 }
 module.exports = {Users};

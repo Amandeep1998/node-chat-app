@@ -20,6 +20,28 @@ socket.on('updateAvailableRoom', function(rooms) {
   jQuery('#available-rooms').html(datalist);
 });
 
+jQuery('[name=room]').on('input', function() {
+  var selectRoom = jQuery('[name=room]');
+  var selectCreateRoom =  jQuery('[name=createroom]');
+  if(selectRoom.val().length > 0) {
+    selectCreateRoom.attr('disabled', 'disabled');
+  } else {
+    selectCreateRoom.removeAttr('disabled');
+  }
+});
+jQuery('[name=createroom]').on('input', function() {
+  var selectRoom = jQuery('[name=room]');
+  var selectCreateRoom =  jQuery('[name=createroom]');
+  if(selectCreateRoom.val().length > 0) {
+    selectRoom.attr('disabled', 'disabled');
+  } else {
+    selectRoom.removeAttr('disabled');
+  }
+});
+// jQuery('[name=room]').on('input', function() {
+//   jQuery('[name=createroom]').removeAttr('disabled');
+// });
+
 
 socket.on('disconnect', function () {
   console.log('Disconnected from server');
