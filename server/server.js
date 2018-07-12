@@ -19,6 +19,7 @@ var users = new Users();
 
 app.use(express.static(publicPath));
 io.on('connection', (socket) => {
+  io.emit('check-available-room', users.getUserRooms());
   console.log('New User Connected');
   io.emit('updateAvailableRoom', users.getUserRooms());
 
