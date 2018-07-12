@@ -5,7 +5,7 @@ const express = require('express');
 const socketIo = require('socket.io');
 
 const {generateMessage, generateLocationMessage} = require('./utils/message');
-const {isRealString} =  require('./utils/validation');
+const {isRealString, isNameUsed} =  require('./utils/validation');
 const {Users} = require('./utils/users');
 const publicPath = path.join(__dirname, '../public');
 
@@ -15,19 +15,28 @@ var app = express();
 var server = http.createServer(app);
 var io = socketIo(server);
 var users = new Users();
-
 // app.use(express.static(__dirname + '/../public'));
-app.use(express.static(publicPath));
 
+app.use(express.static(publicPath));
 io.on('connection', (socket) => {
   console.log('New User Connected');
+  io.emit('updateAvailableRoom', users.getUserRooms());
+
   socket.on('join', function(params, callback) {
     if(!isRealString(params.name) || !isRealString(params.room)) {
-      callback('Name and room is required');
+      return callback('Name and room is required');
     }
+
+
+    if(!isNameUsed(users, params.room, params.name)) {
+      return callback('Name already taken');
+    }
+
+
     socket.join(params.room);
      // users.removeUser(socket.id);//to remove use from all the rooms
      users.addUsers(socket.id, params.name, params.room);
+     io.emit('updateAvailableRoom', users.getUserRooms());
 
      io.to(params.room).emit('updateList', users.getUserList(params.room));//get the names of the all the users
 
@@ -42,6 +51,7 @@ io.on('connection', (socket) => {
     callback();
   });
 
+
   socket.on('createMessage', (message, callback) => {
     var user = users.getUser(socket.id);
     if(user && isRealString(message.text)) {
@@ -54,6 +64,8 @@ io.on('connection', (socket) => {
     //     createdAt: new Date().getTime()
     // });
   })
+
+
 
   socket.on('createLocationMessage', (coords) => {
     var user = users.getUser(socket.id);
@@ -68,9 +80,12 @@ io.on('connection', (socket) => {
       io.to(user.room).emit('updateList', users.getUserList(user.room));//updates the list by removing dissconected user
       io.to(user.room).emit('newMessage', generateMessage('Admin', `${user.name} has left`));
     }
+    io.emit('updateAvailableRoom', users.getUserRooms());
+
   });
 })
 
 server.listen(port, () => {
   console.log(`Server is up on ${port}`);
 })
+module.exports = {users};

@@ -1,3 +1,4 @@
+const _ = require('lodash');
 class Users {
   constructor (){
     this.users = [];
@@ -31,6 +32,15 @@ class Users {
     var nameArray = users.map((user) => user.name);
     return nameArray;
   }
-}
 
+
+
+  getUserRooms() {
+    var users = this.users;
+    var rooms = users.map((user) => {
+      return user.room;
+    })
+    return rooms;
+ }
+}
 module.exports = {Users};
